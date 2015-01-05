@@ -1,0 +1,8 @@
+*.o
+*.bak
+*.sublime-project
+*.sublime-workspace
+*.bbprojectd
+santaclaus
+test_spinlock
+test_semaphore
