@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "semaphore.h"
+#include "barrier.h"
 
 pthread_t *CreateThread ( void *(* f)(void *),void *a) {
 	pthread_t *t = malloc(sizeof(pthread_t));
@@ -32,6 +33,9 @@ static semaphore_t reindeerSem;
 static semaphore_t elfTex;
 static semaphore_t mutex;
 
+static barrier_t sleigh;
+static barrier_t workbench;
+
 /*	********************************************************************************
 	Santa Claus
 	******************************************************************************** */
@@ -45,11 +49,15 @@ void *SantaClaus (void *arg) {
 			printf("Santa Claus: preparing sleigh\n");
 			for (int r=0; r<N_REINDEER; r++)
 				V(reindeerSem);
+			BarrierReached(sleigh);
 			printf("Santa Claus: make all kids in the world happy\n");
+			BarrierReached(sleigh);
 			reindeer = 0;
 		}
 		else if (elves == 3) {
+			BarrierReached(workbench);
 			printf("Santa Claus: helping elves\n");
+			BarrierReached(workbench);
 		}
 		V(mutex);
 	}
@@ -70,7 +78,9 @@ void *Reindeer (void *arg) {
 				V(santaSem);
 			V(mutex);
 			P(reindeerSem);
+			BarrierReached(sleigh);
 			printf("Reindeer %d getting hitched\n",id);
+			BarrierReached(sleigh);
 			sleep(20);
 	}
 	return arg;
@@ -86,6 +96,7 @@ void *Elve (void *arg) {
 	while (true) {
 		bool need_help = random() % 100 < 10;
 		if (need_help) {
+			printf("elve %d needs help\n",id);
 			P(elfTex);
 			P(mutex);
 			elves++;
@@ -95,7 +106,9 @@ void *Elve (void *arg) {
 				V(elfTex);
 			V(mutex);
 
+			BarrierReached(workbench);
 			printf("elve %d will get help from Santa Claus\n",id);
+			BarrierReached(workbench);
 			sleep(10);
 
 			P(mutex);
@@ -122,6 +135,8 @@ int main ( int ac, char **av ) {
 	reindeerSem = CreateSemaphore(0);
 	elfTex = CreateSemaphore(1);
 	mutex = CreateSemaphore(1);
+	sleigh = CreateBarrier(N_REINDEER+1);
+	workbench = CreateBarrier(3+1);
 
 	pthread_t *santa_claus = CreateThread(SantaClaus,0);
 
