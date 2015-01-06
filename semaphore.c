@@ -30,6 +30,7 @@ void CloseSemaphore ( semaphore_t sema) {
 	int ret = pthread_mutex_destroy(&s->mutex);
 	assert(ret == 0);
 	ret = pthread_cond_destroy(&s->queue);
+	free((char *) s);
 }
 
 void P ( semaphore_t sema) {
