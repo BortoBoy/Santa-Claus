@@ -51,5 +51,6 @@ void BarrierReached ( barrier_t b ) {
 		bs->inside = 0;
 		for (int t=0; t<bs->n-1; t++)
 			V(bs->q_leave);
+		V(bs->mutex);
 	}
 }
