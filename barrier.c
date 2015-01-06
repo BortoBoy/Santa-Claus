@@ -46,5 +46,10 @@ void BarrierReached ( barrier_t b ) {
 	}
 	else {
 		assert(bs->inside == bs->n);
+		for (int t=0; t<bs->n-1; t++)
+			V(bs->q_enter);
+		bs->inside = 0;
+		for (int t=0; t<bs->n-1; t++)
+			V(bs->q_leave);
 	}
 }
