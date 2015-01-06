@@ -6,3 +6,4 @@
 santaclaus
 test_spinlock
 test_semaphore
+test_barrier
