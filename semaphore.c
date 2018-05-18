@@ -52,7 +52,7 @@ void V ( semaphore_t sema) {
 	assert(ret == 0);
 	s->value++;
 	if (s->value <= 0) {
-		ret = pthread_cond_signal(&s->queue);
+		ret = pthread_cond_signal(&s->queue);	
 		assert(ret == 0);
 	}
 	ret = pthread_mutex_unlock(&s->mutex);

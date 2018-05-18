@@ -22,34 +22,34 @@ pthread_t *CreateThread ( void *(* f)(void *),void *a) {
 	written by Allen B. Downey
 	******************************************************************************** */
 
-static const int N_ELVES = 10;
-static const int N_REINDEER = 9;
+static const int N_ELFOS = 10;
+static const int N_RENAS = 9;
 
-static int elves;
-static int reindeer;
+static int elfos;
+static int renas;
 static semaphore_t santaSem;
-static semaphore_t reindeerSem;
+static semaphore_t renasSem;
 static semaphore_t elfTex;
 static semaphore_t mutex;
 
 /*	********************************************************************************
-	Santa Claus
+	Papai Noel
 	******************************************************************************** */
 
-void *SantaClaus (void *arg) {
-	printf("Santa Claus: Hoho, here I am\n");
+void *PapaiNoel (void *arg) {
+	printf("Papai Noel Begins\n");
 	while (true) {
 		P(santaSem);
 		P(mutex);
-		if (reindeer == N_REINDEER) {
-			printf("Santa Claus: preparing sleigh\n");
-			for (int r=0; r<N_REINDEER; r++)
-				V(reindeerSem);
-			printf("Santa Claus: make all kids in the world happy\n");
-			reindeer = 0;
+		if (renas == N_RENAS) {
+			printf("Papai Noel praparando o trenó\n");
+			for (int r=0; r<N_RENAS; r++)
+				V(renasSem);
+			printf("Papi Noel indo pro natal\n");
+			renas = 0;
 		}
-		else if (elves == 3) {
-			printf("Santa Claus: helping elves\n");
+		else if (elfos == 3) {
+			printf("Papai Noel ajudando elfos\n");
 		}
 		V(mutex);
 	}
@@ -57,82 +57,77 @@ void *SantaClaus (void *arg) {
 }
 
 /*	********************************************************************************
-	Reindeer
+	Renas
 	******************************************************************************** */
 
-void *Reindeer (void *arg) {
+void *Rena (void *arg) {
 	int id = (int) arg;
-	printf("This is reindeer %d\n",id);
+	printf("Rena %d\n",id);
 	while (true) {
 			P(mutex);
-			reindeer++;
-			if (reindeer == N_REINDEER)
+			renas++;
+			if (renas == N_RENAS)
 				V(santaSem);
 			V(mutex);
-			P(reindeerSem);
-			printf("Reindeer %d getting hitched\n",id);
+			P(renasSem);
+			printf("rena %d está presa\n",id);
 			sleep(20);
 	}
 	return arg;
 }
 
 /*	********************************************************************************
-	Elve
+	Elfo
 	******************************************************************************** */
 
-void *Elve (void *arg) {
+void *Elfo (void *arg) {
 	int id = (int) arg;
-	printf("This is elve %d\n",id);
+	printf("Elfo %d executando\n",id);
 	while (true) {
 		bool need_help = random() % 100 < 10;
 		if (need_help) {
 			P(elfTex);
 			P(mutex);
-			elves++;
-			if (elves == 3)
+			elfos++;
+			if (elfos == 3)
 				V(santaSem);
 			else
 				V(elfTex);
 			V(mutex);
 
-			printf("elve %d will get help from Santa Claus\n",id);
+			printf("elfo %d solicitando ajuda do Papai Noel\n",id);
 			sleep(10);
 
 			P(mutex);
-			elves--;
-			if (elves == 0)
+			elfos--;
+			if (elfos == 0)
 				V(elfTex);
 			V(mutex);
 		}
-		// Do some work
-		printf("elve %d at work\n",id);
+		printf("Elfo %d trabalhando\n",id);
 		sleep(2 + random() % 5);
 	}
 	return arg;
 }
 
-/*	********************************************************************************
-	Build the world with Santa Claus, the reindeer, and the elves
-	******************************************************************************** */
-
 int main ( int ac, char **av ) {
-	elves = 0;
-	reindeer = 0;
+	elfos = 0;
+	renas = 0;
 	santaSem = CreateSemaphore(0);
-	reindeerSem = CreateSemaphore(0);
+	renasSem = CreateSemaphore(0);
 	elfTex = CreateSemaphore(1);
 	mutex = CreateSemaphore(1);
 
-	pthread_t *santa_claus = CreateThread(SantaClaus,0);
+	pthread_t *tPapaiNoel = CreateThread(PapaiNoel,0);
 
-	pthread_t *reindeers[N_REINDEER];
-	for (int r=0; r<N_REINDEER; r++)
-		reindeers[r] = CreateThread(Reindeer,(void *) r+1);
+	pthread_t *tVetordeRenas[N_RENAS];
+	for (int r=0; r<N_RENAS; r++)
+		tVetordeRenas[r] = CreateThread(Rena,(void *) r+1);
 
-	pthread_t *elves[N_ELVES];
-	for (int e=0; e<N_ELVES; e++)
-		elves[e] = CreateThread(Elve,(void *) e+1);
+	pthread_t *tVetordeElfos[N_ELFOS];
+	for (int e=0; e<N_ELFOS; e++)
+		tVetordeElfos[e] = CreateThread(Elfo,(void *) e+1);
 
-	int ret = pthread_join(*santa_claus,NULL);
+	int ret = pthread_join(*tPapaiNoel,NULL);
 	assert(ret == 0);
 }
